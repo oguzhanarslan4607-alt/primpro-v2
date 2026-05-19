@@ -71,3 +71,5 @@ Eski uygulamadaki tarih kontrolü korunmuştur:
 2026-06-02 00:00 öncesi: Mevcut Fiyat Listesi
 2026-06-02 00:00 ve sonrası: Yeni Fiyat Listesi
 ```
+
+`Yeni Fiyat Listesi` 2 Haziran 2026 00:00 öncesinde arayüzde gösterilmez.

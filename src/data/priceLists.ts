@@ -67,8 +67,16 @@ export const priceLists: PriceList[] = [
 
 export const priceListsById = Object.fromEntries(priceLists.map((list) => [list.id, list])) as Record<PriceListId, PriceList>;
 
+export function isNextPriceListVisible(today = new Date()) {
+  return today >= PRICE_LIST_SWITCH_DATE;
+}
+
+export function getVisiblePriceLists(today = new Date()) {
+  return priceLists.filter((list) => list.id !== "next" || isNextPriceListVisible(today));
+}
+
 export function getDefaultPriceListId(today = new Date()): PriceListId {
-  return today >= PRICE_LIST_SWITCH_DATE ? "next" : "current";
+  return isNextPriceListVisible(today) ? "next" : "current";
 }
 
 export function getStandardPaymentKeys(productPrices: Record<string, number>) {

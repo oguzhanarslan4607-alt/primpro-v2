@@ -15,7 +15,7 @@ import {
   getCardPaymentKeys,
   getDefaultPriceListId,
   getStandardPaymentKeys,
-  priceLists,
+  getVisiblePriceLists,
   priceListsById,
 } from "./data/priceLists";
 import { calculateCommission } from "./lib/commissionCalculator";
@@ -46,6 +46,7 @@ function csvEscape(value: string | number) {
 }
 
 export function App() {
+  const visiblePriceLists = useMemo(() => getVisiblePriceLists(), []);
   const [priceListId, setPriceListId] = useState<PriceListId>(() => getDefaultPriceListId());
   const priceList = priceListsById[priceListId];
   const productKeys = useMemo(() => Object.keys(priceList.products), [priceList]);
@@ -71,6 +72,13 @@ export function App() {
   const cardSettlementAmountNumber = parseMoneyInput(cardSettlementAmount);
   const noteAmount = Math.max(saleAmount - cashAmountNumber, 0);
   const historyTotal = history.reduce((total, item) => total + item.result.totalCommission, 0);
+
+  useEffect(() => {
+    if (!visiblePriceLists.some((list) => list.id === priceListId)) {
+      setPriceListId(getDefaultPriceListId());
+      setResult(null);
+    }
+  }, [priceListId, visiblePriceLists]);
 
   useEffect(() => {
     if (!priceList.products[productKey]) {
@@ -200,8 +208,11 @@ export function App() {
 
           <div className="field-group">
             <span className="field-label">Fiyat listesi</span>
-            <div className="segmented">
-              {priceLists.map((list) => (
+            <div
+              className="segmented"
+              style={{ gridTemplateColumns: `repeat(${visiblePriceLists.length}, minmax(0, 1fr))` }}
+            >
+              {visiblePriceLists.map((list) => (
                 <button
                   type="button"
                   key={list.id}
@@ -412,14 +423,16 @@ export function App() {
                 {history.length ? (
                   history.map((item) => (
                     <tr key={item.id}>
-                      <td>
+                      <td data-label="Müşteri">
                         <strong>{item.customerName}</strong>
                         <span>{formatDateTime(item.createdAt)}</span>
                       </td>
-                      <td>{item.result.productKey}</td>
-                      <td>{item.result.paymentKey}</td>
-                      <td className="money-cell">{formatTry(item.result.totalCommission)}</td>
-                      <td>
+                      <td data-label="Ürün">{item.result.productKey}</td>
+                      <td data-label="Ödeme">{item.result.paymentKey}</td>
+                      <td data-label="Prim" className="money-cell">
+                        {formatTry(item.result.totalCommission)}
+                      </td>
+                      <td data-label="">
                         <button
                           type="button"
                           className="icon-button"

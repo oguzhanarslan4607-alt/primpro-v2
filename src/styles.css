@@ -23,10 +23,15 @@
   box-sizing: border-box;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
+  overflow-x: hidden;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(255, 255, 255, 0)),
     var(--page);
@@ -36,10 +41,13 @@ button,
 input,
 select {
   font: inherit;
+  font-size: 16px;
 }
 
 button {
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 button:disabled {
@@ -50,7 +58,8 @@ button:disabled {
 .app-shell {
   width: min(1440px, 100%);
   margin: 0 auto;
-  padding: 20px;
+  padding: max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom))
+    max(20px, env(safe-area-inset-left));
 }
 
 .topbar {
@@ -176,13 +185,14 @@ h2 {
 .field input,
 .field select {
   width: 100%;
-  min-height: 44px;
+  min-height: 48px;
   padding: 0 12px;
   border: 1px solid var(--border);
   border-radius: 8px;
   color: var(--text);
   background: #fff;
   outline: none;
+  min-width: 0;
 }
 
 .field input:focus,
@@ -212,7 +222,7 @@ h2 {
 
 .segmented button,
 .mode-switch button {
-  min-height: 38px;
+  min-height: 44px;
   border: 0;
   border-radius: 6px;
   color: var(--muted);
@@ -293,7 +303,7 @@ h2 {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 44px;
+  min-height: 48px;
   padding: 0 14px;
   border-radius: 8px;
   font-weight: 900;
@@ -394,6 +404,7 @@ h2 {
 
 .table-wrap {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border: 1px solid var(--border);
   border-radius: 8px;
 }
@@ -475,7 +486,8 @@ tr:last-child td {
 
 @media (max-width: 680px) {
   .app-shell {
-    padding: 14px;
+    padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+      max(16px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
   }
 
   .topbar,
@@ -494,13 +506,110 @@ tr:last-child td {
     justify-content: center;
   }
 
-  .segmented,
   .mode-switch,
   .actions {
     grid-template-columns: 1fr;
   }
 
   .panel {
-    padding: 14px;
+    padding: 12px;
+  }
+
+  h1 {
+    font-size: 1.42rem;
+  }
+
+  h2 {
+    font-size: 1.1rem;
+  }
+
+  .panel-heading {
+    margin-bottom: 14px;
+  }
+
+  .field-group {
+    margin-bottom: 12px;
+  }
+
+  .result-total strong {
+    font-size: 1.62rem;
+  }
+
+  .breakdown-row {
+    grid-template-columns: 1fr;
+  }
+
+  .breakdown-row > div:last-child {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .table-wrap {
+    overflow: visible;
+    border: 0;
+  }
+
+  table {
+    min-width: 0;
+  }
+
+  thead {
+    display: none;
+  }
+
+  tbody {
+    display: grid;
+    gap: 10px;
+  }
+
+  tr {
+    display: grid;
+    gap: 9px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+  }
+
+  td {
+    display: grid;
+    grid-template-columns: 86px minmax(0, 1fr);
+    gap: 10px;
+    padding: 0;
+    border-bottom: 0;
+    overflow-wrap: anywhere;
+  }
+
+  td::before {
+    content: attr(data-label);
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 900;
+  }
+
+  td:last-child {
+    grid-template-columns: 1fr;
+    justify-items: end;
+  }
+
+  td:last-child::before,
+  .empty-table::before {
+    display: none;
+  }
+
+  .money-cell {
+    text-align: left;
+  }
+
+  .icon-button {
+    width: 42px;
+    height: 42px;
+  }
+
+  .empty-table {
+    display: block;
+    height: auto;
+    padding: 22px;
   }
 }

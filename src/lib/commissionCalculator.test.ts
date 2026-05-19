@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getDefaultPriceListId, priceLists } from "../data/priceLists";
+import { getDefaultPriceListId, getVisiblePriceLists, priceLists } from "../data/priceLists";
 import { calculateCommission } from "./commissionCalculator";
 
 describe("price list migration", () => {
@@ -11,6 +11,15 @@ describe("price list migration", () => {
   it("matches the legacy switch date behavior", () => {
     expect(getDefaultPriceListId(new Date("2026-06-01T23:59:00"))).toBe("current");
     expect(getDefaultPriceListId(new Date("2026-06-02T00:00:00"))).toBe("next");
+  });
+
+  it("hides the next price list before 2 June 2026", () => {
+    expect(getVisiblePriceLists(new Date("2026-06-01T23:59:00")).map((list) => list.id)).toEqual(["older", "current"]);
+    expect(getVisiblePriceLists(new Date("2026-06-02T00:00:00")).map((list) => list.id)).toEqual([
+      "older",
+      "current",
+      "next",
+    ]);
   });
 });
 
