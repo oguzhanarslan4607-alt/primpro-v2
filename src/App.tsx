@@ -23,6 +23,8 @@ import { formatTry, parseMoneyInput } from "./lib/currency";
 import { loadHistory, saveHistory } from "./lib/storage";
 import type { CommissionResult, PaymentMode, PriceListId, SavedCalculation } from "./types";
 
+const assetBaseUrl = import.meta.env.BASE_URL;
+
 function createId() {
   return typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : String(Date.now());
 }
@@ -174,7 +176,7 @@ export function App() {
     <div className="app-shell">
       <header className="topbar">
         <div className="brand-lockup">
-          <img src="/icon-192.png" alt="" className="brand-mark" />
+          <img src={`${assetBaseUrl}icon-192.png`} alt="" className="brand-mark" />
           <div>
             <p className="eyebrow">Yerel taslak</p>
             <h1>PrimPro v2</h1>
