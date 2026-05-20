@@ -40,6 +40,7 @@ npm run preview
 - Nakit, senet ve kredi kartı prim hesabı ayrıldı.
 - İşlem geçmişi tarayıcı `localStorage` alanında tutuluyor.
 - CSV dışa aktarma eklendi.
+- GitHub Pages üzerinde PWA/offline cache desteği eklendi.
 
 ## Sonraki Aşama
 
