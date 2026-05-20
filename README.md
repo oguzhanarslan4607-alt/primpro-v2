@@ -41,6 +41,17 @@ npm run preview
 
 Firebase zorunlu değildir. `.env.example` dosyasını `.env.local` olarak kopyalayıp değerleri doldurursan e-posta/şifre ile Firebase Auth ve Firestore kayıt senkronizasyonu devreye girer.
 
+GitHub Pages üzerinde Firebase'i açmak için repo ayarlarından aynı isimlerle GitHub Actions secrets eklenmelidir:
+
+```text
+VITE_FIREBASE_API_KEY
+VITE_FIREBASE_AUTH_DOMAIN
+VITE_FIREBASE_PROJECT_ID
+VITE_FIREBASE_STORAGE_BUCKET
+VITE_FIREBASE_MESSAGING_SENDER_ID
+VITE_FIREBASE_APP_ID
+```
+
 Gerekli koleksiyon:
 
 ```text
