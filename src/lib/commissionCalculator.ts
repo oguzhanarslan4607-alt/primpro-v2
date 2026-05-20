@@ -1,5 +1,5 @@
 import { priceListsById } from "../data/priceLists";
-import type { CommissionBreakdownLine, CommissionInput, CommissionResult } from "../types";
+import type { CommissionBreakdownLine, CommissionInput, CommissionResult, PriceListMap } from "../types";
 
 export const VAT_RATE = 1.2;
 
@@ -58,8 +58,8 @@ function makeLine(label: string, grossAmount: number, rate: number): CommissionB
   };
 }
 
-export function calculateCommission(input: CommissionInput): CommissionResult {
-  const priceList = priceListsById[input.priceListId];
+export function calculateCommission(input: CommissionInput, listMap: PriceListMap = priceListsById): CommissionResult {
+  const priceList = listMap[input.priceListId];
   const productPrices = priceList.products[input.productKey];
 
   if (!productPrices) {

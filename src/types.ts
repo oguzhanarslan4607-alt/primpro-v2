@@ -46,3 +46,16 @@ export interface SavedCalculation {
   customerName: string;
   result: CommissionResult;
 }
+
+export type PriceListMap = Record<PriceListId, PriceList>;
+
+export interface LocalPinRecord {
+  salt: string;
+  hash: string;
+}
+
+export interface AppUser {
+  id: string;
+  email?: string;
+  mode: "local" | "firebase";
+}

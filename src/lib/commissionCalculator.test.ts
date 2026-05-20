@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getDefaultPriceListId, getVisiblePriceLists, priceLists } from "../data/priceLists";
+import type { PriceListMap } from "../types";
 import { calculateCommission } from "./commissionCalculator";
 
 describe("price list migration", () => {
@@ -88,5 +89,36 @@ describe("calculateCommission", () => {
     expect(result.saleAmount).toBe(7600);
     expect(result.breakdown[0].rate).toBe(13);
     expect(result.totalCommission).toBeCloseTo(823.33, 2);
+  });
+
+  it("can calculate with locally edited price lists", () => {
+    const customMap = Object.fromEntries(
+      priceLists.map((list) => [
+        list.id,
+        {
+          ...list,
+          products: {
+            ...list.products,
+            "RO - Silver (1300534)": {
+              ...list.products["RO - Silver (1300534)"],
+              "PEŞİN": 12000,
+            },
+          },
+        },
+      ]),
+    ) as unknown as PriceListMap;
+
+    const result = calculateCommission(
+      {
+        priceListId: "current",
+        productKey: "RO - Silver (1300534)",
+        paymentKey: "PEŞİN",
+        mode: "standard",
+      },
+      customMap,
+    );
+
+    expect(result.saleAmount).toBe(12000);
+    expect(result.totalCommission).toBeCloseTo(1300, 2);
   });
 });
