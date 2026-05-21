@@ -331,6 +331,7 @@ h2 {
 
 .result-panel {
   grid-area: result;
+  scroll-margin-top: 78px;
 }
 
 .history-panel {

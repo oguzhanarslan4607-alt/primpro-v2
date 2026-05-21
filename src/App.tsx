@@ -90,6 +90,19 @@ function isInDateRange(value: string, from: string, to: string) {
   return (!from || day >= from) && (!to || day <= to);
 }
 
+function scrollResultIntoViewOnCompactScreen() {
+  if (!window.matchMedia("(max-width: 980px)").matches) return;
+
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      document.getElementById("result-panel")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+  });
+}
+
 function exportCsv(rows: Array<Array<string | number>>, filename: string) {
   const csv = rows.map((row) => row.map(csvEscape).join(";")).join("\n");
   const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" });
@@ -873,14 +886,21 @@ function CalculatorSection(props: {
             <RefreshCcw size={18} />
             Temizle
           </button>
-          <button type="button" className="primary-button" onClick={props.onCalculate}>
+          <button
+            type="button"
+            className="primary-button"
+            onClick={() => {
+              props.onCalculate();
+              scrollResultIntoViewOnCompactScreen();
+            }}
+          >
             <Calculator size={18} />
             Hesapla
           </button>
         </div>
       </section>
 
-      <section className="panel result-panel receipt-panel" aria-labelledby="result-title">
+      <section id="result-panel" className="panel result-panel receipt-panel" aria-labelledby="result-title">
         <div className="panel-heading receipt-heading">
           <div>
             <p className="eyebrow">Sonuç</p>
