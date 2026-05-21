@@ -48,15 +48,7 @@ import {
   watchFirebaseUser,
 } from "./lib/firebaseRepository";
 import { loadHistory, saveHistory } from "./lib/storage";
-import {
-  clearSession,
-  createLocalPin,
-  hasLocalPin,
-  loadSession,
-  resetLocalPin,
-  saveSession,
-  verifyLocalPin,
-} from "./lib/auth";
+import { clearSession, loadSession, saveSession, verifyLocalPin } from "./lib/auth";
 import type { AppUser, CommissionResult, PaymentMode, PriceListId, SavedCalculation } from "./types";
 
 type SectionKey = "calculator" | "reports" | "admin";
@@ -162,6 +154,7 @@ export function App() {
   const [adminPriceValue, setAdminPriceValue] = useState("");
   const [priceJson, setPriceJson] = useState("");
 
+  const isAdmin = user?.role === "admin";
   const cashAmountNumber = parseMoneyInput(cashAmount);
   const cardSettlementAmountNumber = parseMoneyInput(cardSettlementAmount);
   const noteAmount = Math.max(saleAmount - cashAmountNumber, 0);
@@ -209,6 +202,7 @@ export function App() {
         id: firebaseUser.uid,
         email: firebaseUser.email ?? undefined,
         mode: "firebase",
+        role: "admin",
       };
       setUser(nextUser);
       saveSession(nextUser);
@@ -219,6 +213,12 @@ export function App() {
     const timer = window.setInterval(() => setPriceListVisibilityDate(new Date()), 60_000);
     return () => window.clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    if (activeSection === "admin" && !isAdmin) {
+      setActiveSection("calculator");
+    }
+  }, [activeSection, isAdmin]);
 
   useEffect(() => {
     if (!user || user.mode !== "firebase") return;
@@ -302,7 +302,7 @@ export function App() {
     setAdminPriceValue(toInputValue(adminPriceList.products[adminProductKey]?.[adminPaymentKey] ?? 0));
   }, [adminPaymentKey, adminPriceList.products, adminProductKey]);
 
-  async function handleLocalAuth(event: React.FormEvent<HTMLFormElement>) {
+  function handleLocalAuth(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setAuthMessage("");
 
@@ -311,16 +311,9 @@ export function App() {
       return;
     }
 
-    if (!hasLocalPin()) {
-      await createLocalPin(pin.trim());
-      const nextUser: AppUser = { id: "local-admin", mode: "local" };
-      setUser(nextUser);
-      saveSession(nextUser);
-      return;
-    }
-
-    if (await verifyLocalPin(pin.trim())) {
-      const nextUser: AppUser = { id: "local-admin", mode: "local" };
+    const role = verifyLocalPin(pin);
+    if (role) {
+      const nextUser: AppUser = { id: `local-${role}`, mode: "local", role };
       setUser(nextUser);
       saveSession(nextUser);
       return;
@@ -479,12 +472,6 @@ export function App() {
     }
   }
 
-  function handleResetPin() {
-    resetLocalPin();
-    setUser(null);
-    setPin("");
-  }
-
   if (!user) {
     return (
       <AuthScreen
@@ -514,7 +501,7 @@ export function App() {
         <div className="topbar-actions">
           <div className={`status-pill ${user.mode === "firebase" ? "is-cloud" : ""}`}>
             {user.mode === "firebase" ? <Cloud size={16} /> : <Database size={16} />}
-            {user.mode === "firebase" ? firebaseProjectId : "LocalStorage"}
+            {user.mode === "firebase" ? firebaseProjectId : isAdmin ? "Yönetici" : "Kullanıcı"}
           </div>
           <button className="icon-text-button" type="button" onClick={handleLogout}>
             <LogOut size={17} />
@@ -523,7 +510,11 @@ export function App() {
         </div>
       </header>
 
-      <nav className="section-tabs no-print" aria-label="Uygulama bölümleri">
+      <nav
+        className="section-tabs no-print"
+        aria-label="Uygulama bölümleri"
+        style={{ gridTemplateColumns: `repeat(${isAdmin ? 3 : 2}, minmax(0, 1fr))` }}
+      >
         <button className={activeSection === "calculator" ? "active" : ""} onClick={() => setActiveSection("calculator")}>
           <Calculator size={18} />
           Hesaplama
@@ -532,10 +523,12 @@ export function App() {
           <BarChart3 size={18} />
           Raporlar
         </button>
-        <button className={activeSection === "admin" ? "active" : ""} onClick={() => setActiveSection("admin")}>
-          <Settings size={18} />
-          Admin
-        </button>
+        {isAdmin && (
+          <button className={activeSection === "admin" ? "active" : ""} onClick={() => setActiveSection("admin")}>
+            <Settings size={18} />
+            Admin
+          </button>
+        )}
       </nav>
 
       {message && (
@@ -619,7 +612,7 @@ export function App() {
         />
       )}
 
-      {activeSection === "admin" && (
+      {activeSection === "admin" && isAdmin && (
         <AdminSection
           adminPaymentKey={adminPaymentKey}
           adminPaymentKeys={adminPaymentKeys}
@@ -632,7 +625,6 @@ export function App() {
           priceLists={visiblePriceLists}
           onExportPrices={handleExportPrices}
           onImportPrices={handleImportPrices}
-          onResetPin={handleResetPin}
           onResetPrices={handleResetPrices}
           onUpdatePrice={handleUpdatePrice}
           setAdminPaymentKey={setAdminPaymentKey}
@@ -669,8 +661,6 @@ function AuthScreen({
   onFirebaseSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   onLocalSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
 }) {
-  const localPinExists = hasLocalPin();
-
   return (
     <main className="auth-shell">
       <section className="auth-card">
@@ -679,20 +669,18 @@ function AuthScreen({
         <h1>PrimPro v2</h1>
         <p className="auth-copy">
           {firebaseConfigured
-            ? "Firebase girişi aktif. İstersen cihaz PIN'iyle yerel modda da çalışabilirsin."
-            : localPinExists
-              ? "Devam etmek için cihaz PIN'ini gir."
-              : "İlk kullanım için bu cihaza özel bir PIN oluştur."}
+            ? "Yönetici PIN'i, kullanıcı PIN'i veya Firebase hesabınla giriş yapabilirsin."
+            : "Yönetici PIN'i 1905, kullanıcı PIN'i 2026. Kullanıcı girişinde admin ayarları kapalıdır."}
         </p>
 
         <form className="auth-form" onSubmit={onLocalSubmit}>
           <label className="field">
-            <span>{localPinExists ? "PIN" : "Yeni PIN"}</span>
+            <span>PIN</span>
             <input inputMode="numeric" type="password" value={pin} onChange={(event) => setPin(event.target.value)} />
           </label>
           <button className="primary-button" type="submit">
             <LockKeyhole size={18} />
-            {localPinExists ? "Giriş yap" : "PIN oluştur"}
+            Giriş yap
           </button>
         </form>
 
@@ -1182,7 +1170,6 @@ function AdminSection({
   priceLists,
   onExportPrices,
   onImportPrices,
-  onResetPin,
   onResetPrices,
   onUpdatePrice,
   setAdminPaymentKey,
@@ -1202,7 +1189,6 @@ function AdminSection({
   priceLists: Array<{ id: PriceListId; label: string; shortLabel: string }>;
   onExportPrices: () => void;
   onImportPrices: () => void;
-  onResetPin: () => void;
   onResetPrices: () => void;
   onUpdatePrice: () => void;
   setAdminPaymentKey: (value: string) => void;
@@ -1310,15 +1296,13 @@ function AdminSection({
         <div className="panel-heading">
           <div>
             <p className="eyebrow">Güvenlik</p>
-            <h2>Yerel PIN</h2>
+            <h2>Rol bilgisi</h2>
           </div>
           <ShieldCheck size={24} />
         </div>
-        <p className="muted-text">PIN sıfırlanınca bu cihazda tekrar PIN oluşturma ekranı açılır. Kayıtlar silinmez.</p>
-        <button type="button" className="secondary-button danger-button" onClick={onResetPin}>
-          <Trash2 size={18} />
-          PIN'i sıfırla
-        </button>
+        <p className="muted-text">
+          Bu ekrana yalnızca yönetici PIN'i ile girenler ulaşabilir. Kullanıcı PIN'iyle girişte admin ayarları gizlenir.
+        </p>
       </section>
     </main>
   );

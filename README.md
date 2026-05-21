@@ -32,7 +32,7 @@ npm run preview
 - Eski KDV oranı korundu: `1.20`.
 - Nakit, senet ve kredi kartı prim hesabı ayrı hesaplanır.
 - İşlem geçmişi cihazda `localStorage` içinde tutulur.
-- Yerel PIN girişi vardır; PIN sıfırlanınca kayıtlar silinmez.
+- Yerel PIN girişi iki role ayrılır: yönetici PIN'i admin ayarlarını açar, kullanıcı PIN'i admin ayarlarını gizler.
 - Rapor ekranında arama, tarih, ürün filtresi, CSV ve PDF/yazdırma çıktısı bulunur.
 - Admin ekranında fiyatlar yerel olarak düzenlenebilir, resmi değerlere döndürülebilir ve JSON yedek alınabilir.
 - GitHub Pages üzerinde PWA/offline cache desteği vardır.

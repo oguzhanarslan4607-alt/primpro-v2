@@ -49,13 +49,11 @@ export interface SavedCalculation {
 
 export type PriceListMap = Record<PriceListId, PriceList>;
 
-export interface LocalPinRecord {
-  salt: string;
-  hash: string;
-}
+export type UserRole = "admin" | "user";
 
 export interface AppUser {
   id: string;
   email?: string;
   mode: "local" | "firebase";
+  role: UserRole;
 }
