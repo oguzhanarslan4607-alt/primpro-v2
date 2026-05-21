@@ -667,11 +667,6 @@ function AuthScreen({
         <img src={`${assetBaseUrl}icon-192.png`} alt="" className="auth-logo" />
         <p className="eyebrow">Güvenli giriş</p>
         <h1>PrimPro v2</h1>
-        <p className="auth-copy">
-          {firebaseConfigured
-            ? "Yönetici PIN'i, kullanıcı PIN'i veya Firebase hesabınla giriş yapabilirsin."
-            : "Yönetici PIN'i 1905, kullanıcı PIN'i 2026. Kullanıcı girişinde admin ayarları kapalıdır."}
-        </p>
 
         <form className="auth-form" onSubmit={onLocalSubmit}>
           <label className="field">
