@@ -294,6 +294,11 @@ export function App() {
   useEffect(() => {
     if (mode === "standard" && standardPaymentKey === "PEŞİN") {
       setCashAmount(toInputValue(saleAmount));
+      return;
+    }
+
+    if (mode === "standard") {
+      setCashAmount("0");
     }
   }, [mode, saleAmount, standardPaymentKey]);
 
