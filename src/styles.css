@@ -16,6 +16,8 @@
   --strong-2: #0f766e;
   --danger: #b91c1c;
   --warning: #b45309;
+  --accent: #2563eb;
+  --ink: #0f172a;
   --shadow: 0 18px 45px rgba(26, 47, 37, 0.12);
 }
 
@@ -33,7 +35,8 @@ body {
   margin: 0;
   overflow-x: hidden;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(255, 255, 255, 0)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0)),
+    linear-gradient(135deg, rgba(20, 83, 45, 0.08), rgba(37, 99, 235, 0.05) 48%, rgba(255, 255, 255, 0) 72%),
     var(--page);
 }
 
@@ -241,19 +244,28 @@ h2 {
 .auth-card {
   width: min(430px, 100%);
   display: grid;
-  gap: 16px;
-  padding: 24px;
-  border: 1px solid var(--border);
+  gap: 18px;
+  padding: 26px;
+  border: 1px solid #cbd8c1;
   border-radius: 8px;
   background: #fff;
-  box-shadow: var(--shadow);
+  box-shadow: 0 24px 65px rgba(15, 23, 42, 0.16);
+}
+
+.auth-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
 }
 
 .auth-logo {
-  width: 64px;
-  height: 64px;
-  border: 1px solid var(--border);
+  width: 72px;
+  height: 72px;
+  border: 1px solid #b9d0b5;
   border-radius: 8px;
+  box-shadow: 0 12px 28px rgba(20, 83, 45, 0.18);
 }
 
 .auth-copy,
@@ -266,6 +278,11 @@ h2 {
 .auth-form {
   display: grid;
   gap: 12px;
+}
+
+.auth-card .primary-button {
+  min-height: 52px;
+  box-shadow: 0 14px 26px rgba(20, 83, 45, 0.22);
 }
 
 .auth-firebase {
@@ -513,14 +530,85 @@ h2 {
 }
 
 .result-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 14px;
-  background: #e9f5ec;
+  background: linear-gradient(135deg, #e9f5ec, #eefaf7);
   border-color: #b7d8bf;
+}
+
+.result-total svg {
+  color: var(--strong);
 }
 
 .result-total strong {
   color: var(--strong);
   font-size: 2rem;
+}
+
+.receipt-panel {
+  position: sticky;
+  top: 12px;
+}
+
+.receipt-heading > svg {
+  color: var(--strong-2);
+}
+
+.receipt-card {
+  position: relative;
+  display: grid;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid #cbd8c1;
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(241, 244, 236, 0.7)),
+    #fff;
+}
+
+.receipt-card::before,
+.receipt-card::after {
+  content: "";
+  position: absolute;
+  top: 112px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--panel);
+  border: 1px solid #cbd8c1;
+}
+
+.receipt-card::before {
+  left: -9px;
+}
+
+.receipt-card::after {
+  right: -9px;
+}
+
+.receipt-brandline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed #b9c8b1;
+}
+
+.receipt-brandline span {
+  color: var(--ink);
+  font-weight: 950;
+  font-size: 1.05rem;
+}
+
+.receipt-brandline b {
+  padding: 5px 9px;
+  border-radius: 999px;
+  color: var(--strong);
+  background: #e9f5ec;
+  font-size: 0.76rem;
 }
 
 .calc-details,
@@ -568,6 +656,7 @@ h2 {
   padding: 12px;
   border: 1px solid var(--border);
   border-radius: 8px;
+  background: #fff;
 }
 
 .breakdown-row div {
@@ -690,12 +779,68 @@ h2 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.price-compare {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.price-cell {
+  position: relative;
+}
+
+.price-cell small {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.price-compare.is-same .local {
+  border-color: #b7d8bf;
+  background: #e9f5ec;
+}
+
+.price-compare.is-changed .local {
+  border-color: #f4c46b;
+  background: #fff7e6;
+}
+
+.price-compare.is-changed .delta strong {
+  color: var(--warning);
+}
+
+.price-compare.is-same .delta strong {
+  color: var(--muted);
+}
+
 .danger-button {
   color: var(--danger);
 }
 
 .print-report {
   display: none;
+}
+
+.print-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 14px;
+  margin-bottom: 18px;
+  border-bottom: 2px solid #111;
+}
+
+.print-brand img {
+  width: 52px;
+  height: 52px;
+  border-radius: 8px;
+}
+
+.print-brand h1 {
+  margin: 0;
+}
+
+.print-brand p {
+  margin: 4px 0 0;
+  color: #444;
 }
 
 .history-actions {
@@ -854,6 +999,15 @@ tr:last-child td {
     padding: 18px;
   }
 
+  .auth-brand {
+    gap: 12px;
+  }
+
+  .auth-logo {
+    width: 62px;
+    height: 62px;
+  }
+
   .mode-switch,
   .actions {
     grid-template-columns: 1fr;
@@ -881,6 +1035,10 @@ tr:last-child td {
 
   .result-total strong {
     font-size: 1.62rem;
+  }
+
+  .receipt-panel {
+    position: static;
   }
 
   .breakdown-row {
@@ -996,6 +1154,10 @@ tr:last-child td {
   .print-report p {
     margin: 0 0 16px;
     color: #444;
+  }
+
+  .print-brand p {
+    margin: 4px 0 0;
   }
 
   .print-report table {

@@ -6,7 +6,6 @@ import {
   CreditCard,
   Database,
   Download,
-  FileText,
   History,
   LockKeyhole,
   LogOut,
@@ -67,6 +66,11 @@ function todayInputValue() {
 
 function toInputValue(value: number) {
   return Number.isFinite(value) ? String(value) : "";
+}
+
+function formatSignedTry(value: number) {
+  if (Math.abs(value) < 0.01) return formatTry(0);
+  return `${value > 0 ? "+" : "-"}${formatTry(Math.abs(value))}`;
 }
 
 function formatDateTime(value: string) {
@@ -664,9 +668,13 @@ function AuthScreen({
   return (
     <main className="auth-shell">
       <section className="auth-card">
-        <img src={`${assetBaseUrl}icon-192.png`} alt="" className="auth-logo" />
-        <p className="eyebrow">Güvenli giriş</p>
-        <h1>PrimPro v2</h1>
+        <div className="auth-brand">
+          <img src={`${assetBaseUrl}icon-192.png`} alt="" className="auth-logo" />
+          <div>
+            <p className="eyebrow">Güvenli giriş</p>
+            <h1>PrimPro v2</h1>
+          </div>
+        </div>
 
         <form className="auth-form" onSubmit={onLocalSubmit}>
           <label className="field">
@@ -872,20 +880,28 @@ function CalculatorSection(props: {
         </div>
       </section>
 
-      <section className="panel result-panel" aria-labelledby="result-title">
-        <div className="panel-heading">
+      <section className="panel result-panel receipt-panel" aria-labelledby="result-title">
+        <div className="panel-heading receipt-heading">
           <div>
             <p className="eyebrow">Sonuç</p>
             <h2 id="result-title">Prim özeti</h2>
           </div>
-          <FileText size={24} />
+          <ReceiptText size={24} />
         </div>
 
         {props.result ? (
-          <>
+          <div className="receipt-card">
+            <div className="receipt-brandline">
+              <span>PrimPro</span>
+              <b>{props.result.mode === "card" ? "Kart" : "Nakit / Senet"}</b>
+            </div>
+
             <div className="result-total">
-              <span>Toplam prim</span>
-              <strong>{formatTry(props.result.totalCommission)}</strong>
+              <div>
+                <span>Toplam prim</span>
+                <strong>{formatTry(props.result.totalCommission)}</strong>
+              </div>
+              <ReceiptText size={28} />
             </div>
 
             <div className="calc-details">
@@ -929,7 +945,7 @@ function CalculatorSection(props: {
               <Save size={18} />
               Tabloya kaydet
             </button>
-          </>
+          </div>
         ) : (
           <div className="empty-state">
             <Calculator size={28} />
@@ -1192,6 +1208,10 @@ function AdminSection({
   setAdminProductKey: (value: string) => void;
   setPriceJson: (value: string) => void;
 }) {
+  const localValue = parseMoneyInput(adminPriceValue);
+  const priceDelta = localValue - officialValue;
+  const isPriceChanged = Math.abs(priceDelta) > 0.009;
+
   return (
     <main className="admin-layout no-print">
       <section className="panel">
@@ -1240,14 +1260,19 @@ function AdminSection({
           </label>
         </div>
 
-        <div className="amount-strip">
-          <div>
+        <div className={`amount-strip price-compare ${isPriceChanged ? "is-changed" : "is-same"}`}>
+          <div className="price-cell official">
             <span>Resmi değer</span>
             <strong>{formatTry(officialValue)}</strong>
           </div>
-          <div>
+          <div className="price-cell local">
             <span>Yerel değer</span>
-            <strong>{formatTry(parseMoneyInput(adminPriceValue))}</strong>
+            <strong>{formatTry(localValue)}</strong>
+            <small>{isPriceChanged ? "Düzenlenmiş" : "Resmi değerle aynı"}</small>
+          </div>
+          <div className="price-cell delta">
+            <span>Fark</span>
+            <strong>{formatSignedTry(priceDelta)}</strong>
           </div>
         </div>
 
@@ -1314,8 +1339,13 @@ function PrintableReport({
 }) {
   return (
     <section className="print-report">
-      <h1>PrimPro Raporu</h1>
-      <p>{new Date().toLocaleDateString("tr-TR")} işlem özeti</p>
+      <header className="print-brand">
+        <img src={`${assetBaseUrl}icon-192.png`} alt="" />
+        <div>
+          <h1>PrimPro Raporu</h1>
+          <p>{new Date().toLocaleDateString("tr-TR")} işlem özeti</p>
+        </div>
+      </header>
       <h2>Toplam Prim: {formatTry(reportTotal)}</h2>
 
       <table>
