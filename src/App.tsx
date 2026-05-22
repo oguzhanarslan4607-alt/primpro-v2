@@ -9,6 +9,8 @@ import {
   History,
   LockKeyhole,
   LogOut,
+  Moon,
+  Palette,
   Printer,
   ReceiptText,
   RefreshCcw,
@@ -17,7 +19,9 @@ import {
   Settings,
   ShieldCheck,
   Smartphone,
+  Sun,
   Trash2,
+  TrendingUp,
 } from "lucide-react";
 import {
   getCardPaymentKeys,
@@ -51,8 +55,15 @@ import { clearSession, loadSession, saveSession, verifyLocalPin } from "./lib/au
 import type { AppUser, CommissionResult, PaymentMode, PriceListId, SavedCalculation } from "./types";
 
 type SectionKey = "calculator" | "reports" | "admin";
+type ThemeKey = "light" | "dark" | "emerald";
 
 const assetBaseUrl = import.meta.env.BASE_URL;
+const THEME_KEY = "primpro-v2.theme.v1";
+
+function loadTheme(): ThemeKey {
+  const storedTheme = localStorage.getItem(THEME_KEY);
+  return storedTheme === "dark" || storedTheme === "emerald" ? storedTheme : "light";
+}
 
 function createId() {
   return typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : String(Date.now());
@@ -123,6 +134,7 @@ export function App() {
   const [password, setPassword] = useState("");
   const [installPrompt, setInstallPrompt] = useState<Event | null>(null);
   const [priceListVisibilityDate, setPriceListVisibilityDate] = useState(() => new Date());
+  const [theme, setTheme] = useState<ThemeKey>(() => loadTheme());
 
   const [priceLists, setPriceLists] = useState(() => loadPriceLists());
   const priceListMap = useMemo(() => toPriceListMap(priceLists), [priceLists]);
@@ -209,6 +221,7 @@ export function App() {
 
     return Array.from(map.entries()).sort((a, b) => b[1].commission - a[1].commission);
   }, [filteredHistory]);
+  const topProductName = productSummary[0]?.[0] ?? "Yok";
 
   useEffect(() => {
     if (!firebaseConfigured) return;
@@ -225,6 +238,11 @@ export function App() {
       saveSession(nextUser);
     });
   }, []);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem(THEME_KEY, theme);
+  }, [theme]);
 
   useEffect(() => {
     const timer = window.setInterval(() => setPriceListVisibilityDate(new Date()), 60_000);
@@ -525,6 +543,7 @@ export function App() {
             {user.mode === "firebase" ? <Cloud size={16} /> : <Database size={16} />}
             {user.mode === "firebase" ? firebaseProjectId : isAdmin ? "Yönetici" : "Kullanıcı"}
           </div>
+          <ThemePicker theme={theme} setTheme={setTheme} />
           <button className="icon-text-button" type="button" onClick={handleLogout}>
             <LogOut size={17} />
             Çıkış
@@ -549,6 +568,23 @@ export function App() {
           <button className={activeSection === "admin" ? "active" : ""} onClick={() => setActiveSection("admin")}>
             <Settings size={18} />
             Admin
+          </button>
+        )}
+      </nav>
+
+      <nav className="bottom-nav no-print" aria-label="Mobil bölümler">
+        <button className={activeSection === "calculator" ? "active" : ""} onClick={() => setActiveSection("calculator")}>
+          <Calculator size={20} />
+          <span>Hesap</span>
+        </button>
+        <button className={activeSection === "reports" ? "active" : ""} onClick={() => setActiveSection("reports")}>
+          <BarChart3 size={20} />
+          <span>Rapor</span>
+        </button>
+        {isAdmin && (
+          <button className={activeSection === "admin" ? "active" : ""} onClick={() => setActiveSection("admin")}>
+            <Settings size={20} />
+            <span>Admin</span>
           </button>
         )}
       </nav>
@@ -623,6 +659,7 @@ export function App() {
           reportProducts={reportProducts}
           reportSaleTotal={reportSaleTotal}
           reportTotal={reportTotal}
+          topProductName={topProductName}
           onClearHistory={handleClearHistory}
           onDeleteHistoryItem={handleDeleteHistoryItem}
           onExportCsv={() => handleExportCsv(filteredHistory)}
@@ -726,6 +763,46 @@ function AuthScreen({
         {authMessage && <p className="auth-error">{authMessage}</p>}
       </section>
     </main>
+  );
+}
+
+function ThemePicker({
+  theme,
+  setTheme,
+}: {
+  theme: ThemeKey;
+  setTheme: (theme: ThemeKey) => void;
+}) {
+  return (
+    <div className="theme-picker" aria-label="Tema seçimi">
+      <button
+        type="button"
+        className={theme === "light" ? "active" : ""}
+        aria-label="Açık tema"
+        title="Açık tema"
+        onClick={() => setTheme("light")}
+      >
+        <Sun size={16} />
+      </button>
+      <button
+        type="button"
+        className={theme === "emerald" ? "active" : ""}
+        aria-label="Kurumsal tema"
+        title="Kurumsal tema"
+        onClick={() => setTheme("emerald")}
+      >
+        <Palette size={16} />
+      </button>
+      <button
+        type="button"
+        className={theme === "dark" ? "active" : ""}
+        aria-label="Koyu tema"
+        title="Koyu tema"
+        onClick={() => setTheme("dark")}
+      >
+        <Moon size={16} />
+      </button>
+    </div>
   );
 }
 
@@ -995,6 +1072,7 @@ function ReportsSection({
   reportProducts,
   reportSaleTotal,
   reportTotal,
+  topProductName,
   onClearHistory,
   onDeleteHistoryItem,
   onExportCsv,
@@ -1015,6 +1093,7 @@ function ReportsSection({
   reportProducts: string[];
   reportSaleTotal: number;
   reportTotal: number;
+  topProductName: string;
   onClearHistory: () => void;
   onDeleteHistoryItem: (id: string) => void;
   onExportCsv: () => void;
@@ -1081,6 +1160,10 @@ function ReportsSection({
             <span>Tüm kayıt primi</span>
             <strong>{formatTry(historyTotal)}</strong>
           </div>
+          <div>
+            <span>Lider ürün</span>
+            <strong>{topProductName}</strong>
+          </div>
         </div>
 
         <div className="history-actions">
@@ -1109,13 +1192,16 @@ function ReportsSection({
         </div>
         <div className="summary-grid">
           {productSummary.length ? (
-            productSummary.map(([product, summary]) => (
-              <div className="summary-card" key={product}>
-                <strong>{product}</strong>
-                <span>{summary.count} kayıt / {formatTry(summary.sales)} satış</span>
-                <b>{formatTry(summary.commission)}</b>
-              </div>
-            ))
+            <>
+              <ProductBarChart productSummary={productSummary} />
+              {productSummary.map(([product, summary]) => (
+                <div className="summary-card" key={product}>
+                  <strong>{product}</strong>
+                  <span>{summary.count} kayıt / {formatTry(summary.sales)} satış</span>
+                  <b>{formatTry(summary.commission)}</b>
+                </div>
+              ))}
+            </>
           ) : (
             <div className="empty-state small">Filtreye uygun kayıt yok</div>
           )}
@@ -1124,6 +1210,30 @@ function ReportsSection({
 
       <HistoryTable history={filteredHistory} onDeleteHistoryItem={onDeleteHistoryItem} />
     </main>
+  );
+}
+
+function ProductBarChart({
+  productSummary,
+}: {
+  productSummary: Array<[string, { count: number; commission: number; sales: number }]>;
+}) {
+  const maxCommission = Math.max(...productSummary.map(([, summary]) => summary.commission), 1);
+
+  return (
+    <div className="bar-chart" aria-label="Ürün bazlı prim grafiği">
+      {productSummary.slice(0, 6).map(([product, summary]) => (
+        <div className="bar-row" key={product}>
+          <div>
+            <strong>{product}</strong>
+            <span>{formatTry(summary.commission)}</span>
+          </div>
+          <div className="bar-track">
+            <i style={{ width: `${Math.max((summary.commission / maxCommission) * 100, 6)}%` }} />
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -1298,6 +1408,14 @@ function AdminSection({
           <div className="price-cell delta">
             <span>Fark</span>
             <strong>{formatSignedTry(priceDelta)}</strong>
+          </div>
+        </div>
+
+        <div className={`price-status ${isPriceChanged ? "is-changed" : "is-same"}`}>
+          <TrendingUp size={18} />
+          <div>
+            <strong>{isPriceChanged ? "Yerel fiyat resmi listeden farklı" : "Yerel fiyat resmi listeyle aynı"}</strong>
+            <span>{isPriceChanged ? `${formatSignedTry(priceDelta)} fark uygulanıyor.` : "Bu seçimde fiyat farkı yok."}</span>
           </div>
         </div>
 
